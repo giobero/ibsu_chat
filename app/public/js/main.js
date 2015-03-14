@@ -9,7 +9,8 @@
 	var initSocket = function (socketReady) {
 		window.WebSocket = window.WebSocket || window.MozWebSocket;
 
-		var connection = new WebSocket('ws://127.0.0.1:8080');
+		var socketUrl = (window.location+'').replace('http','ws');
+		var connection = new WebSocket(socketUrl);
 
 		connection.onopen = function () {
 			/* Expose connection inside module. */
