@@ -76,7 +76,8 @@ var server = http.createServer(function(req, res) {
 	res.setHeader('Content-Length', responseFile.plain.length);
 	res.end(responseFile.plain, 'binary');
 });
-server.listen(8080, function() { });
+server.listen(7777, function() { });
+console.log('Server started, port: 7777');
 
 // create the web socket server
 wsServer = new WebSocketServer({
