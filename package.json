@@ -1,0 +1,29 @@
+{
+  "name": "ibsu_chat",
+  "version": "0.0.1",
+  "description": "Chat server-client for learning purposes",
+  "main": "server.js",
+  "dependencies": {
+    "websocket": "~1.0.17"
+  },
+  "devDependencies": {
+ 	"websocket": "1.0.x" 
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/giobero/ibsu_chat.git"
+  },
+  "keywords": [
+    "websocket",
+    "chat"
+  ],
+  "author": "Giorgi Beridze",
+  "license": "GNU GPL v2",
+  "bugs": {
+    "url": "https://github.com/giobero/ibsu_chat/issues"
+  }
+}
