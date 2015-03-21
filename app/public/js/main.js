@@ -76,7 +76,7 @@
 	var initDom = function() {
 		chatArea = El('div', {
 			class: 'chat-area',
-			style: 'height:80%;'
+			style: 'height:80%; overflow:scroll;'
 		});
 
 		messageField = El('input', {
