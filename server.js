@@ -132,6 +132,7 @@ var server = http.createServer(function(req, res) {
 server.listen(7777);
 /* Log that server is successfully started on port. */
 console.log('Server started, port: 7777');
+console.log('Alex Modifications...');
 
 /* Our little utility function for logging server events. */
 var log = function(msg) {
