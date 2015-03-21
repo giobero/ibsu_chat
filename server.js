@@ -18,11 +18,11 @@ var serverApp = {
 	dir: __dirname
 };
 
-/* Where is located our application that contanins web-content. */
+/* Where is located our application that contains web-content. */
 var appDir = 'app';
 /* Directory inside application where is located public content of application. */
-var publicDir = 'public'
-/* Just full path till application's public direcotry */
+var publicDir = 'public';
+/* Just full path till application's public directory */
 var publicDirFull = '/' +  appDir + '/' + publicDir;
 
 
@@ -133,12 +133,6 @@ server.listen(7777);
 /* Log that server is successfully started on port. */
 console.log('Server started, port: 7777');
 
-// create the web socket server
-wsServer = new WebSocketServer({
-	httpServer: server
-});
-
-
 /* Our little utility function for logging server events. */
 var log = function(msg) {
 	console.log(new Date() + ': ' + msg);
@@ -152,6 +146,11 @@ var connections = [];
  * still has active connection, false otherwise.
  */
 var userNameCache = {};
+
+// create the web socket server
+var wsServer = new WebSocketServer({
+	httpServer: server
+});
 
 wsServer.on('request', function(request) {
 	var connection = request.accept(null, request.origin);
