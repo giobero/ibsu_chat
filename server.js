@@ -91,6 +91,7 @@ var server = http.createServer(function(req, res) {
 		res.setHeader('Content-Type', 'application/json');
 		res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
 		var responseString = JSON.stringify(userNameCache);
+		/* See documentation of Buffer.byteLength on page: http://nodejs.org */
 		res.setHeader('Content-Length', Buffer.byteLength(responseString, 'utf-8'));
 		res.end(responseString);
 		return;
