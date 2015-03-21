@@ -4,7 +4,6 @@
 	var username = null;
 	var chatArea = null;
 	var messageField = null;
-	
 
 	var initSocket = function (socketReady) {
 		window.WebSocket = window.WebSocket || window.MozWebSocket;
@@ -30,8 +29,8 @@
 	};
 
 	var El = function (tag, innerHtml, attrs) {
-		
-		var log = attrs && attrs.type=='button'; 
+
+		var log = attrs && attrs.type=='button';
 		if (log)  {
 			console.log(attrs);
 			console.log(innerHtml);
@@ -39,7 +38,7 @@
 		}
 		(typeof innerHtml === 'object') && (attrs = innerHtml);
 		attrs = attrs || {};
-	
+
 		if (log) {
 			console.log('after');
 			console.log(attrs);
@@ -54,7 +53,7 @@
 			}
 			el.setAttribute(attr, attrs[attr]);
 		}
-		
+
 		var ob = {
 			el: el,
 			addChild: function(children) {
@@ -65,29 +64,34 @@
 				return ob;
 			},
 			on: function (eventName, handler) {
-				el.addEventListener(eventName, handler, ob);	
+				el.addEventListener(eventName, function(e){return handler(e)}, ob);
 				return ob;
 			}
 		};
 
 		return ob;
 	};
-	
+
 	var initDom = function() {
+
+		welcomeBanner = El('h1');
+
 		chatArea = El('div', {
 			class: 'chat-area',
-			style: 'height:80%; overflow:scroll;'
+			style: 'height:80%; overflow-x:auto;overflow-y:scroll;',
 		});
 
 		messageField = El('input', {
 			type: 'text',
-			class: 'message-field'
+			class: 'message-field',
+			autofocus : 'autofocus'
 		});
-		
-		var messageFieldContainer = El('div').addChild(
+
+		var messageFieldContainer = El('form').addChild(
 				El('label', 'Message: '),
 				messageField,
-				El('input', {type: 'button', value: 'Send'}).on('click', function() {
+				El('input', {type: 'submit', value: 'Send'}).on('click', function(e) {
+					e.preventDefault();
 					var msg = messageField.el.value;
 					if (!msg) {
 						return;
@@ -96,7 +100,8 @@
 					conn.send(JSON.stringify({type:'msg', msg: msg}));
 				})
 		);
-
+		welcomeBanner.el.innerHTML = "Hello, " + username;
+		document.body.appendChild(welcomeBanner.el);
 		document.body.appendChild(chatArea.el);
 		document.body.appendChild(messageFieldContainer.el);
 	};
@@ -105,6 +110,12 @@
 		initSocket(function() {
 			/* Enforse user to enter non-empty username. Otherwise don't let him chat! */
 			username = prompt('Choose your username: ');
+			// min length 2
+			if(username == null || username.trim().length < 2  ){
+				alert('You are not allowed to take username length less than 2 ');
+				window.location.reload();
+			}
+
 			conn.send(JSON.stringify({
 				type: 'username',
 				username: username

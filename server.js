@@ -1,7 +1,7 @@
 /**
- * This file creates NodeJs server for http requests and for socket connections. 
+ * This file creates NodeJs server for http requests and for socket connections.
  * Is written for learning purposes for IBSU students.
- */ 
+ */
 
 
 /* Class for socket server. */
@@ -26,7 +26,7 @@ var publicDir = 'public';
 var publicDirFull = '/' +  appDir + '/' + publicDir;
 
 
-/* Content-Type Mapping to their file extention. */ 
+/* Content-Type Mapping to their file extention. */
 var extentions = {
 	'image/png': /\.png$/,
 	'text/css': /\.css$/,
@@ -34,20 +34,20 @@ var extentions = {
 	'text/javascript': /\.js$/
 };
 
-/* 
- * Object for caching public & static content like css, html, js, images and so on... 
+/*
+ * Object for caching public & static content like css, html, js, images and so on...
  */
 var filesCache = {};
 /* 404 (Not Found) error html file will be cached here */
 var error404File = null;
 
-/** 
- * Function that caches static content of application 
+/**
+ * Function that caches static content of application
  */
 function scanStaticDir (dir) {
 	dir = dir || '/';
-	/* 
-	 * Synchroniously iterating through files & folders of public directory. 
+	/*
+	 * Synchroniously iterating through files & folders of public directory.
 	 * Read and cache via augmenting file info to <b>fileCache</b> object.
 	 */
 	fs.readdirSync(serverApp.dir + publicDirFull + dir).forEach(function (subdir) {
@@ -56,13 +56,13 @@ function scanStaticDir (dir) {
 			/* If another file is directory with recursive call we cache it too. */
 			scanStaticDir(dir + subdir + '/');
 			return;
-		} 
+		}
 
 		/* Read content of file from HDD. */
 		var plain = fs.readFileSync(serverApp.dir + publicDirFull + dir + subdir, 'binary');
 
-		/* 
-		 * Loop on each Content Types and check which extention matches to 
+		/*
+		 * Loop on each Content Types and check which extention matches to
 		 * file we are iterating on.
 		 */
 		var contentType = 'text/plain';
@@ -101,26 +101,26 @@ var server = http.createServer(function(req, res) {
 		/* main.html is our welcome page. */
 		pathname = '/public/html/main.html';
 	}
-	
+
 	var responseFile = null;
 	var responseCode = null;
 	if (filesCache[pathname]) {
 		responseCode = 200;
 		responseFile = filesCache[pathname];
 	} else {
-		/* Singleton design pattern. We just read 404 file once from HDD. */ 
+		/* Singleton design pattern. We just read 404 file once from HDD. */
 		if (!error404File) {
-			/* Read and cache 404 html  file. */ 
+			/* Read and cache 404 html  file. */
 			var plain = fs.readFileSync(serverApp.dir + '/' + appDir + '/views/errors/404.html', 'binary');
 			error404File = {
 				plain: plain,
 				contentType: 'text/html; charset=utf-8'
 			}
 		}
-		responseCode = 404; 
+		responseCode = 404;
 		responseFile = error404File;
 	}
-	
+
 	/* Put reseponse code, response header and content in resopnse object. */
 	res.statusCode = responseCode;
 	res.setHeader('Content-Type', responseFile.contentType);
@@ -132,7 +132,6 @@ var server = http.createServer(function(req, res) {
 server.listen(7777);
 /* Log that server is successfully started on port. */
 console.log('Server started, port: 7777');
-console.log('Alex Modifications...');
 
 /* Our little utility function for logging server events. */
 var log = function(msg) {
@@ -142,7 +141,7 @@ var log = function(msg) {
 /* In this array we store all opened socket connections. */
 var connections = [];
 
-/* 
+/*
  * Key for this object is connected usernames. Value is true if username
  * still has active connection, false otherwise.
  */
@@ -155,7 +154,7 @@ var wsServer = new WebSocketServer({
 
 wsServer.on('request', function(request) {
 	var connection = request.accept(null, request.origin);
-	
+
 	log('Another user connected');
 	connections.push(connection);
 	var username = null;
@@ -174,7 +173,7 @@ wsServer.on('request', function(request) {
 			return;
 		}
 		if (msg.type === 'username') {
-			username = msg.username;	
+			username = msg.username;
 			userNameCache[username] = true;
 			log('user set username:' + username);
 		} else if (msg.type === 'msg') {
@@ -188,7 +187,7 @@ wsServer.on('request', function(request) {
 			}
 		}
 	});
-	
+
 	/* Event when client closes connection (closes browser tab) */
 	connection.on('close', function(connection) {
 		log('user quited. (' + username + ')');
