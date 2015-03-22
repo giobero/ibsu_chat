@@ -174,7 +174,11 @@ wsServer.on('request', function(request) {
 		}
 		if (msg.type === 'username') {
 			username = msg.username;
-			userNameCache[username] = true;
+			if(userNameCache[username]){
+				console.log('exists');
+			}{
+				userNameCache[username] = true;
+			}
 			log('user set username:' + username);
 		} else if (msg.type === 'msg') {
 			log('messge from: ' + username + '. msg=' + msg.msg);
