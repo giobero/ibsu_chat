@@ -15,7 +15,7 @@
 			/* Expose connection inside module. */
 			conn = connection;
 			socketReady();
-			console.log('connection is opened');
+			// console.log('connection is opened');
 		};
 
 		connection.onerror = function (error) {
@@ -24,7 +24,17 @@
 
 		connection.onmessage = function (message) {
 			var data = JSON.parse(message.data);
-			chatArea.addChild(El('div', data.username + ': ' + data.msg));
+			if(!data.hasOwnProperty("type")){
+				return false;
+			}
+			// if same username
+			 if(data.type == "sameUname"){
+				alert('This username exists, please choose other username');
+				window.location.reload();
+				return false;
+			}else if(data.type == "msg"){
+				chatArea.addChild(El('div', data.username + ': ' + data.msg));
+			}
 		};
 	};
 
@@ -77,8 +87,7 @@
 		welcomeBanner = El('h1');
 
 		chatArea = El('div', {
-			class: 'chat-area',
-			style: 'height:80%; overflow-x:auto;overflow-y:scroll;',
+			class: 'chat-area'
 		});
 
 		messageField = El('input', {
@@ -93,7 +102,7 @@
 				El('input', {type: 'submit', value: 'Send'}).on('click', function(e) {
 					e.preventDefault();
 					var msg = messageField.el.value;
-					if (!msg) {
+					if (!msg || !msg.trim()) {
 						return;
 					}
 					messageField.el.value = '';
@@ -114,6 +123,7 @@
 			if(username == null || username.trim().length < 2  ){
 				alert('You are not allowed to take username length less than 2 ');
 				window.location.reload();
+				return false;
 			}
 
 			conn.send(JSON.stringify({

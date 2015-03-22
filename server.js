@@ -121,7 +121,7 @@ var server = http.createServer(function(req, res) {
 		responseFile = error404File;
 	}
 
-	/* Put reseponse code, response header and content in resopnse object. */
+	/* Put reseponse code, response header and content in response object. */
 	res.statusCode = responseCode;
 	res.setHeader('Content-Type', responseFile.contentType);
 	res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
@@ -174,9 +174,14 @@ wsServer.on('request', function(request) {
 		}
 		if (msg.type === 'username') {
 			username = msg.username;
+			// if this username exists
 			if(userNameCache[username]){
-				console.log('exists');
-			}{
+				connection.send(JSON.stringify({
+			 		type:'sameUname',
+			 		username: username
+			 	}));
+				return false;
+			}else{
 				userNameCache[username] = true;
 			}
 			log('user set username:' + username);

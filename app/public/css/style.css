@@ -3,3 +3,9 @@ h1{
 	color:  #868686;
 	font-size: 36px;
 }
+
+.chat-area{
+	height:80%;
+	overflow-x:auto;
+	overflow-y:scroll;
+}
