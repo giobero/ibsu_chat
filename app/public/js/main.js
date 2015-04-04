@@ -114,16 +114,20 @@
 
 		messageField = El('input', {
 			type: 'text',
-			class: 'message-field'
+			class: 'message-field',
+			autofocus: 'true'
 		});
-		
-		var messageSendButton = El('input', {type: 'button', value: 'Send'}).on('click', function() {
+		// nika
+		var messageSendButton = El('input', {type: 'submit', value: 'Send'}).on('click', function() {
 			var msg = messageField.el.value;
 			if (!msg) {
 				return;
 			}
 			messageField.el.value = '';
 			conn.send(JSON.stringify({type:'msg', msg: msg}));
+
+			var objDiv = document.getElementsByClassName("chat-area")[0];
+			objDiv.scrollTop = objDiv.scrollHeight;
 		});
 
 		var getUsersButton = El('input', {type: 'button', value: 'GetUsers'}).on('click', function() {
@@ -134,13 +138,15 @@
 			getUsers(false);	
 		});
 
-		var messageFieldContainer = El('div').addChild(
+		var messageFieldContainer = El('form').addChild(
 				El('label', 'Message: '),
 				messageField,
 				messageSendButton,
 				getUsersButton,
 				getUsersSyncButton
-		);
+		).on('submit', function(e){
+			e.preventDefault();
+		});;
 
 		document.body.appendChild(chatArea.el);
 		document.body.appendChild(messageFieldContainer.el);
@@ -162,6 +168,6 @@
 	window.Chat = {
 		init: init
 	};
-})(document);
 
+})(document);
 window.onload = Chat.init;
