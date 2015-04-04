@@ -117,7 +117,6 @@
 			class: 'message-field',
 			autofocus: 'true'
 		});
-		// nika
 		var messageSendButton = El('input', {type: 'submit', value: 'Send'}).on('click', function() {
 			var msg = messageField.el.value;
 			if (!msg) {
