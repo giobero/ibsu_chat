@@ -7,6 +7,7 @@ Chat server project on NodeJs for learning purposes.
 
 Changes:
 
+  - history up to 10 messages working
   - reset.css
   - welcome message
   - if username empty or less than 2 character retry

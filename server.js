@@ -15,7 +15,7 @@ var fs = require('fs');
 
 /* Object to cache some info about our server. */
 var serverApp = {
-	dir: __dirname
+    dir: __dirname
 };
 
 /* Where is located our application that contains web-content. */
@@ -28,10 +28,10 @@ var publicDirFull = '/' +  appDir + '/' + publicDir;
 
 /* Content-Type Mapping to their file extention. */
 var extentions = {
-	'image/png': /\.png$/,
-	'text/css': /\.css$/,
-	'text/html; charset=utf-8': /\.html$/,
-	'text/javascript': /\.js$/
+    'image/png': /\.png$/,
+    'text/css': /\.css$/,
+    'text/html; charset=utf-8': /\.html$/,
+    'text/javascript': /\.js$/
 };
 
 /*
@@ -41,92 +41,93 @@ var filesCache = {};
 /* 404 (Not Found) error html file will be cached here */
 var error404File = null;
 
+
 /**
  * Function that caches static content of application
  */
 function scanStaticDir (dir) {
-	dir = dir || '/';
-	/*
-	 * Synchroniously iterating through files & folders of public directory.
-	 * Read and cache via augmenting file info to <b>fileCache</b> object.
-	 */
-	fs.readdirSync(serverApp.dir + publicDirFull + dir).forEach(function (subdir) {
-		var stat = fs.statSync(serverApp.dir + publicDirFull + dir + subdir);
-		if (stat.isDirectory()) {
-			/* If another file is directory with recursive call we cache it too. */
-			scanStaticDir(dir + subdir + '/');
-			return;
-		}
+    dir = dir || '/';
+    /*
+     * Synchroniously iterating through files & folders of public directory.
+     * Read and cache via augmenting file info to <b>fileCache</b> object.
+     */
+    fs.readdirSync(serverApp.dir + publicDirFull + dir).forEach(function (subdir) {
+        var stat = fs.statSync(serverApp.dir + publicDirFull + dir + subdir);
+        if (stat.isDirectory()) {
+            /* If another file is directory with recursive call we cache it too. */
+            scanStaticDir(dir + subdir + '/');
+            return;
+        }
 
-		/* Read content of file from HDD. */
-		var plain = fs.readFileSync(serverApp.dir + publicDirFull + dir + subdir, 'binary');
+        /* Read content of file from HDD. */
+        var plain = fs.readFileSync(serverApp.dir + publicDirFull + dir + subdir, 'binary');
 
-		/*
-		 * Loop on each Content Types and check which extention matches to
-		 * file we are iterating on.
-		 */
-		var contentType = 'text/plain';
-		for (var contentTypeKey in extentions) {
-			if (extentions[contentTypeKey].test(subdir)) {
-				contentType = contentTypeKey;
-				break;
-			}
-		}
-		/* Augment file object to cache object. Key will be relative path of file. */
-		filesCache['/' + publicDir + dir + subdir] = {
-			contentType: contentType,
-			plain: plain
-		};
-	});
+        /*
+         * Loop on each Content Types and check which extention matches to
+         * file we are iterating on.
+         */
+        var contentType = 'text/plain';
+        for (var contentTypeKey in extentions) {
+            if (extentions[contentTypeKey].test(subdir)) {
+                contentType = contentTypeKey;
+                break;
+            }
+        }
+        /* Augment file object to cache object. Key will be relative path of file. */
+        filesCache['/' + publicDir + dir + subdir] = {
+            contentType: contentType,
+            plain: plain
+        };
+    });
 };
 scanStaticDir();
 
 /* Our HTTP Server */
 var server = http.createServer(function(req, res) {
-	var pathname = url.parse(req.url).pathname;
+    var pathname = url.parse(req.url).pathname;
 
-	if (pathname == '/getUsers') {
-		/* Get Usernames of chat members. */
-		res.statusCode = 200;
-		res.setHeader('Content-Type', 'application/json');
-		res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
-		var responseString = JSON.stringify(userNameCache);
-		/* See documentation of Buffer.byteLength on page: http://nodejs.org */
-		res.setHeader('Content-Length', Buffer.byteLength(responseString, 'utf-8'));
-		res.end(responseString);
-		return;
-	}
+    if (pathname == '/getUsers') {
+        /* Get Usernames of chat members. */
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
+        var responseString = JSON.stringify(userNameCache);
+        /* See documentation of Buffer.byteLength on page: http://nodejs.org */
+        res.setHeader('Content-Length', Buffer.byteLength(responseString, 'utf-8'));
+        res.end(responseString);
+        return;
+    }
 
-	if (pathname == '/') {
-		/* main.html is our welcome page. */
-		pathname = '/public/html/main.html';
-	}
+    if (pathname == '/') {
+        /* main.html is our welcome page. */
+        pathname = '/public/html/main.html';
+    }
 
-	var responseFile = null;
-	var responseCode = null;
-	if (filesCache[pathname]) {
-		responseCode = 200;
-		responseFile = filesCache[pathname];
-	} else {
-		/* Singleton design pattern. We just read 404 file once from HDD. */
-		if (!error404File) {
-			/* Read and cache 404 html  file. */
-			var plain = fs.readFileSync(serverApp.dir + '/' + appDir + '/views/errors/404.html', 'binary');
-			error404File = {
-				plain: plain,
-				contentType: 'text/html; charset=utf-8'
-			}
-		}
-		responseCode = 404;
-		responseFile = error404File;
-	}
+    var responseFile = null;
+    var responseCode = null;
+    if (filesCache[pathname]) {
+        responseCode = 200;
+        responseFile = filesCache[pathname];
+    } else {
+        /* Singleton design pattern. We just read 404 file once from HDD. */
+        if (!error404File) {
+            /* Read and cache 404 html  file. */
+            var plain = fs.readFileSync(serverApp.dir + '/' + appDir + '/views/errors/404.html', 'binary');
+            error404File = {
+                plain: plain,
+                contentType: 'text/html; charset=utf-8'
+            }
+        }
+        responseCode = 404;
+        responseFile = error404File;
+    }
 
-	/* Put reseponse code, response header and content in response object. */
-	res.statusCode = responseCode;
-	res.setHeader('Content-Type', responseFile.contentType);
-	res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
-	res.setHeader('Content-Length', responseFile.plain.length);
-	res.end(responseFile.plain, 'binary');
+    /* Put reseponse code, response header and content in response object. */
+    res.statusCode = responseCode;
+    res.setHeader('Content-Type', responseFile.contentType);
+    res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
+    res.setHeader('Content-Length', responseFile.plain.length);
+    res.end(responseFile.plain, 'binary');
 });
 /* Start server on port: 7777. */
 server.listen(7777);
@@ -135,7 +136,7 @@ console.log('Server started, port: 7777');
 
 /* Our little utility function for logging server events. */
 var log = function(msg) {
-	console.log(new Date() + ': ' + msg);
+    console.log(new Date() + ': ' + msg);
 }
 
 /* In this array we store all opened socket connections. */
@@ -147,61 +148,81 @@ var connections = [];
  */
 var userNameCache = {};
 
+var messageHistory = [];
+
 // create the web socket server
 var wsServer = new WebSocketServer({
-	httpServer: server
+    httpServer: server
 });
 
 wsServer.on('request', function(request) {
-	var connection = request.accept(null, request.origin);
+    var connection = request.accept(null, request.origin);
 
-	log('Another user connected');
-	connections.push(connection);
-	var username = null;
+    log('Another user connected');
+    connections.push(connection);
+    var username = null;
 
-	/* Event when client sends message to server. */
-	connection.on('message', function (message) {
-		if (message.type !== 'utf8') {
-			return;
-		}
-		try {
-			var msg = JSON.parse(message.utf8Data);
-		} catch(e) {
-			return;
-		}
-		if (!msg.type) {
-			return;
-		}
-		if (msg.type === 'username') {
-			username = msg.username;
-			// if this username exists
-			if(userNameCache[username]){
-				connection.send(JSON.stringify({
-			 		type:'sameUname',
-			 		username: username
-			 	}));
-				return false;
-			}else{
-				userNameCache[username] = true;
-			}
-			log('user set username:' + username);
-		} else if (msg.type === 'msg') {
-			log('messge from: ' + username + '. msg=' + msg.msg);
-			for (var i=0,l=connections.length; i<l; i++) {
-				connections[i].send(JSON.stringify({
-					type: 'msg',
-					username: username,
-					msg: msg.msg
-				}));
-			}
-		}
-	});
+    // send messages history
+    var historyToSend = {"type" : "history", "data" : messageHistory};
+    connection.send(JSON.stringify(historyToSend));
 
-	/* Event when client closes connection (closes browser tab) */
-	connection.on('close', function(connection) {
-		log('user quited. (' + username + ')');
-		userNameCache[username] = false;
-		connections.splice(connections.indexOf(connection), 1);
-	});
+    /* Event when client sends message to server. */
+    connection.on('message', function (message) {
+        if (message.type !== 'utf8') {
+            return;
+        }
+        try {
+            var msg = JSON.parse(message.utf8Data);
+        } catch(e) {
+            return;
+        }
+        if (!msg.type) {
+            return;
+        }
+        if (msg.type === 'username') {
+            username = msg.username;
+            // if this username exists
+            if(userNameCache[username]){
+                connection.send(JSON.stringify({
+                    type:'sameUname',
+                    username: username
+                }));
+                return false;
+            }else{
+                userNameCache[username] = true;
+            }
+            log('user set username:' + username);
+        } else if (msg.type === 'msg') {
+            // log('messge from: ' + username + '. msg=' + msg.msg);
+
+            for (var i=0,l=connections.length; i<l; i++) {
+                connections[i].send(JSON.stringify({
+                    "type": 'msg',
+                    "username": username,
+                    "msg": msg.msg
+                }));
+            }
+
+            messageHistory.push(
+                {
+                "username" : username,
+                "msg" : msg.msg
+                }
+            );
+            if(messageHistory.length == 11){
+                messageHistory.splice(0,1);
+            }
+
+        }
+    });
+
+    /* Event when client closes connection (closes browser tab) */
+    connection.on('close', function(connection) {
+        log('user quited. (' + username + ')');
+        /* delete this username from cache, we can set also boolean false for it
+         userNameCache[username] = false; */
+        delete userNameCache[username];
+        connections.splice(connections.indexOf(connection), 1);
+    });
 });
 

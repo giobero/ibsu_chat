@@ -1,142 +1,153 @@
 (function(document) {
-	/* Web Socket connection. */
-	var conn = null;
-	var username = null;
-	var chatArea = null;
-	var messageField = null;
+    /* Web Socket connection. */
+    var conn = null;
+    var username = null;
+    var chatArea = null;
+    var messageField = null;
 
-	var initSocket = function (socketReady) {
-		window.WebSocket = window.WebSocket || window.MozWebSocket;
+    var initSocket = function (socketReady) {
+        window.WebSocket = window.WebSocket || window.MozWebSocket;
 
-		var socketUrl = (window.location+'').replace('http','ws');
-		var connection = new WebSocket(socketUrl);
+        var socketUrl = (window.location+'').replace('http','ws');
+        var connection = new WebSocket(socketUrl);
 
-		connection.onopen = function () {
-			/* Expose connection inside module. */
-			conn = connection;
-			socketReady();
-			// console.log('connection is opened');
-		};
+        connection.onopen = function () {
+            /* Expose connection inside module. */
+            conn = connection;
+            socketReady();
+            // console.log('connection is opened');
+        };
 
-		connection.onerror = function (error) {
-			console.error(error);
-		};
+        connection.onerror = function (error) {
+            console.error(error);
+        };
 
-		connection.onmessage = function (message) {
-			var data = JSON.parse(message.data);
-			if(!data.hasOwnProperty("type")){
-				return false;
-			}
-			// if same username
-			 if(data.type == "sameUname"){
-				alert('This username exists, please choose other username');
-				window.location.reload();
-				return false;
-			}else if(data.type == "msg"){
-				chatArea.addChild(El('div', data.username + ': ' + data.msg));
-			}
-		};
-	};
+        connection.onmessage = function (message) {
+            var data = JSON.parse(message.data);
 
-	var El = function (tag, innerHtml, attrs) {
 
-		var log = attrs && attrs.type=='button';
-		if (log)  {
-			console.log(attrs);
-			console.log(innerHtml);
-			console.log(typeof innerHtml);
-		}
-		(typeof innerHtml === 'object') && (attrs = innerHtml);
-		attrs = attrs || {};
+            if(!data.hasOwnProperty("type")){
+                return false;
+            }
 
-		if (log) {
-			console.log('after');
-			console.log(attrs);
-		}
+            // if history
+            if(data.type == "history"){
+                var historyData = data.data;
+                for(var i = 0, historyLength = historyData.length; i < historyLength; i++){
+                    chatArea.addChild(El('div', historyData[i].username + ': ' + historyData[i].msg));
+                }
+            }
 
-		var el = document.createElement(tag);
-		typeof innerHtml === 'string' && (el.innerHTML = innerHtml);
+            // if same username
+             if(data.type == "sameUname"){
+                alert('This username exists, please choose other username');
+                window.location.reload();
+                return false;
+            }else if(data.type == "msg"){
+                chatArea.addChild(El('div', data.username + ': ' + data.msg));
+            }
+        };
+    };
 
-		for (var attr in attrs) {
-			if (!attrs.hasOwnProperty(attr)) {
-				continue;
-			}
-			el.setAttribute(attr, attrs[attr]);
-		}
+    var El = function (tag, innerHtml, attrs) {
 
-		var ob = {
-			el: el,
-			addChild: function(children) {
-				var arr = children instanceof Array ? children : arguments;
-				for (var i=0, l=arr.length; i<l; i++) {
-					el.appendChild(arr[i].el);
-				}
-				return ob;
-			},
-			on: function (eventName, handler) {
-				el.addEventListener(eventName, function(e){return handler(e)}, ob);
-				return ob;
-			}
-		};
+        var log = attrs && attrs.type=='button';
+        if (log)  {
+            console.log(attrs);
+            console.log(innerHtml);
+            console.log(typeof innerHtml);
+        }
+        (typeof innerHtml === 'object') && (attrs = innerHtml);
+        attrs = attrs || {};
 
-		return ob;
-	};
+        if (log) {
+            console.log('after');
+            console.log(attrs);
+        }
 
-	var initDom = function() {
+        var el = document.createElement(tag);
+        typeof innerHtml === 'string' && (el.innerHTML = innerHtml);
 
-		welcomeBanner = El('h1');
+        for (var attr in attrs) {
+            if (!attrs.hasOwnProperty(attr)) {
+                continue;
+            }
+            el.setAttribute(attr, attrs[attr]);
+        }
 
-		chatArea = El('div', {
-			class: 'chat-area'
-		});
+        var ob = {
+            el: el,
+            addChild: function(children) {
+                var arr = children instanceof Array ? children : arguments;
+                for (var i=0, l=arr.length; i<l; i++) {
+                    el.appendChild(arr[i].el);
+                }
+                return ob;
+            },
+            on: function (eventName, handler) {
+                el.addEventListener(eventName, function(e){return handler(e)}, ob);
+                return ob;
+            }
+        };
 
-		messageField = El('input', {
-			type: 'text',
-			class: 'message-field',
-			autofocus : 'autofocus'
-		});
+        return ob;
+    };
 
-		var messageFieldContainer = El('form').addChild(
-				El('label', 'Message: '),
-				messageField,
-				El('input', {type: 'submit', value: 'Send'}).on('click', function(e) {
-					e.preventDefault();
-					var msg = messageField.el.value;
-					if (!msg || !msg.trim()) {
-						return;
-					}
-					messageField.el.value = '';
-					conn.send(JSON.stringify({type:'msg', msg: msg}));
-				})
-		);
-		welcomeBanner.el.innerHTML = "Hello, " + username;
-		document.body.appendChild(welcomeBanner.el);
-		document.body.appendChild(chatArea.el);
-		document.body.appendChild(messageFieldContainer.el);
-	};
+    var initDom = function() {
 
-	var init = function () {
-		initSocket(function() {
-			/* Enforse user to enter non-empty username. Otherwise don't let him chat! */
-			username = prompt('Choose your username: ');
-			// min length 2
-			if(username == null || username.trim().length < 2  ){
-				alert('You are not allowed to take username length less than 2 ');
-				window.location.reload();
-				return false;
-			}
+        welcomeBanner = El('h1');
 
-			conn.send(JSON.stringify({
-				type: 'username',
-				username: username
-			}));
-			initDom();
-		});
-	};
+        chatArea = El('div', {
+            class: 'chat-area'
+        });
 
-	window.Chat = {
-		init: init
-	};
+        messageField = El('input', {
+            type: 'text',
+            class: 'message-field',
+            autofocus : 'autofocus'
+        });
+
+        var messageFieldContainer = El('form').addChild(
+                El('label', 'Message: '),
+                messageField,
+                El('input', {type: 'submit', value: 'Send'}).on('click', function(e) {
+                    e.preventDefault();
+                    var msg = messageField.el.value;
+                    if (!msg || !msg.trim()) {
+                        return;
+                    }
+                    messageField.el.value = '';
+                    conn.send(JSON.stringify({type:'msg', msg: msg}));
+                })
+        );
+        welcomeBanner.el.innerHTML = "Hello, " + username;
+        document.body.appendChild(welcomeBanner.el);
+        document.body.appendChild(chatArea.el);
+        document.body.appendChild(messageFieldContainer.el);
+    };
+
+    var init = function () {
+        initSocket(function() {
+            /* Enforse user to enter non-empty username. Otherwise don't let him chat! */
+            username = prompt('Choose your username: ');
+            // min length 2
+            if(username == null || username.trim().length < 2  ){
+                alert('You are not allowed to take username length less than 2 ');
+                window.location.reload();
+                return false;
+            }
+
+            conn.send(JSON.stringify({
+                type: 'username',
+                username: username
+            }));
+            initDom();
+        });
+    };
+
+    window.Chat = {
+        init: init
+    };
 })(document);
 
 window.onload = Chat.init;
