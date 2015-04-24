@@ -44,7 +44,7 @@
                 window.location.reload();
                 return false;
             }else if(data.type == "msg"){
-                chatArea.addChild(El('div', data.username + ': ' + data.msg));
+                chatArea.addChild(El('div',  data.username + ': ' + data.msg));
             }
         };
     };
@@ -110,7 +110,7 @@
         var messageFieldContainer = El('form').addChild(
                 El('label', 'Message: '),
                 messageField,
-                El('input', {type: 'submit', value: 'Send'}).on('click', function(e) {
+                El('input', {type: 'submit', value: 'Send', 'class' : 'button'}).on('click', function(e) {
                     e.preventDefault();
                     var msg = messageField.el.value;
                     if (!msg || !msg.trim()) {
@@ -121,9 +121,9 @@
                 })
         );
         welcomeBanner.el.innerHTML = "Hello, " + username;
-        document.body.appendChild(welcomeBanner.el);
-        document.body.appendChild(chatArea.el);
-        document.body.appendChild(messageFieldContainer.el);
+        document.getElementById("main-wrapper").appendChild(welcomeBanner.el);
+        document.getElementById("main-wrapper").appendChild(chatArea.el);
+        document.getElementById("main-wrapper").appendChild(messageFieldContainer.el);
     };
 
     var init = function () {
