@@ -1,4 +1,4 @@
-# [https://tatocaster.me:7777](https://tatocaster.me:7777)
+# [http://tatocaster.me:7777](http://tatocaster.me:7777)
 # ibsu_chat
 Chat server project on NodeJs for learning purposes.
 
