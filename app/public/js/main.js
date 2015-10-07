@@ -149,7 +149,7 @@
 
 	var init = function () {
 		initSocket(function() {
-			/* Enforse user to enter non-empty username. Otherwise don't let him chat! */
+			/* satesto komentari! */
 			username = prompt('Choose your username: ');
 			conn.send(JSON.stringify({
 				type: 'username',
