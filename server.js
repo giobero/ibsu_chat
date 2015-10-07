@@ -175,6 +175,7 @@ wsServer.on('request', function(request) {
 		if (!msg.type) {
 			return;
 		}
+		
 		if (msg.type === 'username') {
 			username = msg.username;	
 			userNameCache[username] = true;
