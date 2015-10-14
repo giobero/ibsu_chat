@@ -3,8 +3,37 @@
 	var conn = null;
 	var username = null;
 	var chatArea = null;
+	var ajaxArea = null;
 	var messageField = null;
+
+	var getAjaxConstructor = function() {
+		if (window.XMLHttpRequest)  {
+			// code for IE7+, Firefox, Chrome, Opera, Safari
+			return XMLHttpRequest;
+		} else {
+			// code for IE6, IE5
+			return ActiveXObject('Microsoft.XMLHTTP');
+		}
+	}
 	
+	var getUsers = function(async) {
+		var xmlhttp = new (getAjaxConstructor());
+		var async = async || false;
+		xmlhttp.open('GET', 'getUsers?rnd='+Math.random(), async);
+		if (!async) {
+			xmlhttp.send();
+			console.log(xmlhttp);
+			ajaxArea.addChild(El('pre', xmlhttp.responseText+''));
+		} else {
+			xmlhttp.onreadystatechange=function() {
+				if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+					console.log(xmlhttp);
+					ajaxArea.addChild(El('pre', xmlhttp.responseText+''));
+				}
+			}
+			xmlhttp.send();
+		}
+	};
 
 	var initSocket = function (socketReady) {
 		window.WebSocket = window.WebSocket || window.MozWebSocket;
@@ -76,7 +105,11 @@
 	var initDom = function() {
 		chatArea = El('div', {
 			class: 'chat-area',
-			style: 'height:80%; overflow:scroll;'
+			style: 'height:50%; overflow:scroll;'
+		});
+
+		ajaxArea = El('div', {
+			style: 'overflow:scroll;'
 		});
 
 		messageField = El('input', {
@@ -84,26 +117,39 @@
 			class: 'message-field'
 		});
 		
+		var messageSendButton = El('input', {type: 'button', value: 'Send'}).on('click', function() {
+			var msg = messageField.el.value;
+			if (!msg) {
+				return;
+			}
+			messageField.el.value = '';
+			conn.send(JSON.stringify({type:'msg', msg: msg}));
+		});
+
+		var getUsersButton = El('input', {type: 'button', value: 'GetUsers'}).on('click', function() {
+			getUsers(true);	
+		});
+
+		var getUsersSyncButton = El('input', {type: 'button', value: 'GetUsersSync'}).on('click', function() {
+			getUsers(false);	
+		});
+
 		var messageFieldContainer = El('div').addChild(
 				El('label', 'Message: '),
 				messageField,
-				El('input', {type: 'button', value: 'Send'}).on('click', function() {
-					var msg = messageField.el.value;
-					if (!msg) {
-						return;
-					}
-					messageField.el.value = '';
-					conn.send(JSON.stringify({type:'msg', msg: msg}));
-				})
+				messageSendButton,
+				getUsersButton,
+				getUsersSyncButton
 		);
 
 		document.body.appendChild(chatArea.el);
 		document.body.appendChild(messageFieldContainer.el);
+		document.body.appendChild(ajaxArea.el);
 	};
 
 	var init = function () {
 		initSocket(function() {
-			/* Enforse user to enter non-empty username. Otherwise don't let him chat! */
+			/* satesto komentari! */
 			username = prompt('Choose your username: ');
 			conn.send(JSON.stringify({
 				type: 'username',
