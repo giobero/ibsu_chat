@@ -13,6 +13,31 @@ var url = require('url');
 /* NodeJs native library to work with OS file system. */
 var fs = require('fs');
 
+var MongoClient = require('mongodb').MongoClient;
+
+MongoClient.connect("mongodb://localhost:27017/test_db", function(err, db) {
+	if (err) {
+		console.log(err);
+	}
+
+	console.log("We are connected");
+	var coll = db.collection('test');
+	coll.find({}, function(err, result) {
+		result.each(function (err, data) { 
+			if (err) { 
+				console.log(err);
+			}
+			console.log(data);
+		});
+	});
+
+	coll.update({name: 'Test Name'}, {$set: {name: 'Test Name'} }, {upsert:true}, function (err, result) {
+		console.log(result.result);	
+	});
+});
+
+
+
 /* Object to cache some info about our server. */
 var serverApp = {
 	dir: __dirname

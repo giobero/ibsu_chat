@@ -4,10 +4,12 @@
   "description": "Chat server-client for learning purposes",
   "main": "server.js",
   "dependencies": {
-    "websocket": "~1.0.17"
+    "websocket": "~1.0.17",
+    "mongodb": "2.0.45"
   },
   "devDependencies": {
- 	"websocket": "1.0.x" 
+ 	"websocket": "1.0.x",
+    "mongodb": "2.0.45"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
