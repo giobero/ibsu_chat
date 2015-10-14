@@ -112,13 +112,15 @@ var server = http.createServer(function(req, res) {
 
 	if (pathname == '/getUsers') {
 		/* Get Usernames of chat members. */
-		res.statusCode = 200;
-		res.setHeader('Content-Type', 'application/json');
-		res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
-		var responseString = JSON.stringify(userNameCache);
-		/* See documentation of Buffer.byteLength on page: http://nodejs.org */
-		res.setHeader('Content-Length', Buffer.byteLength(responseString, 'utf-8'));
-		res.end(responseString);
+		setTimeout(function() {
+			res.statusCode = 200;
+			res.setHeader('Content-Type', 'application/json');
+			res.setHeader('Cache-Control', 'max-age=3600, must-revalidate');
+			var responseString = JSON.stringify(userNameCache);
+			/* See documentation of Buffer.byteLength on page: http://nodejs.org */
+			res.setHeader('Content-Length', Buffer.byteLength(responseString, 'utf-8'));
+			res.end(responseString);
+		}, 3000);
 		return;
 	}
 
@@ -157,6 +159,7 @@ var server = http.createServer(function(req, res) {
 server.listen(7777);
 /* Log that server is successfully started on port. */
 console.log('Server started, port: 7777');
+console.log('Alex Modifications...');
 
 /* Our little utility function for logging server events. */
 var log = function(msg) {
@@ -197,6 +200,7 @@ wsServer.on('request', function(request) {
 		if (!msg.type) {
 			return;
 		}
+		
 		if (msg.type === 'username') {
 			username = msg.username;	
 			userNameCache[username] = true;
