@@ -35,6 +35,21 @@
 		}
 	};
 
+	var insert = function (obj, callback) {
+		var xmlhttp = new (getAjaxConstructor());
+		var async = async || false;
+		xmlhttp.open('POST', 'insert?rnd='+Math.random(), true);
+
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				callback(xmlhttp.responseText);
+			}
+		}
+
+		xmlhttp.setRequestHeader('content-type', 'application/json');
+		xmlhttp.send(JSON.stringify(obj));
+	};
+
 	var initSocket = function (socketReady) {
 		window.WebSocket = window.WebSocket || window.MozWebSocket;
 
@@ -160,7 +175,8 @@
 	};
 
 	window.Chat = {
-		init: init
+		init: init,
+		insert: insert
 	};
 })(document);
 

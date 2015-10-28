@@ -13,6 +13,7 @@ var url = require('url');
 /* NodeJs native library to work with OS file system. */
 var fs = require('fs');
 
+/*
 var MongoClient = require('mongodb').MongoClient;
 
 MongoClient.connect("mongodb://localhost:27017/test_db", function(err, db) {
@@ -35,7 +36,7 @@ MongoClient.connect("mongodb://localhost:27017/test_db", function(err, db) {
 		console.log(result.result);	
 	});
 });
-
+*/
 
 
 /* Object to cache some info about our server. */
@@ -109,6 +110,19 @@ scanStaticDir();
 /* Our HTTP Server */
 var server = http.createServer(function(req, res) {
 	var pathname = url.parse(req.url).pathname;
+
+	if (pathname == '/insert') {
+		var body = '';
+		req.on('data', function (data) {
+			body += data;
+		});
+		req.on('end', function() {
+			var obj = JSON.parse(body);
+			console.log(obj);
+			res.end(JSON.stringify({a:1}));
+		});
+		return;
+	}
 
 	if (pathname == '/getUsers') {
 		/* Get Usernames of chat members. */
